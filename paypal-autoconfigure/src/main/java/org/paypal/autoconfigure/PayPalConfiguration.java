@@ -1,5 +1,7 @@
 package org.paypal.autoconfigure;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -14,13 +16,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.paypal.base.ConfigManager;
-import com.paypal.base.Constants;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.OAuthTokenCredential;
 import com.paypal.base.rest.PayPalRESTException;
 import com.paypal.base.rest.PayPalResource;
-
-import junit.framework.Test;
 
 @Configuration
 @ConditionalOnClass(PayPalResource.class)
@@ -31,69 +30,87 @@ public class PayPalConfiguration {
 
 	@Autowired
 	private PayPalProperties payPalProperties;
+	
 
+	@ConditionalOnClass(name="junit.framework.Test")
 	@ConditionalOnMissingBean
-	@ConditionalOnProperty(matchIfMissing = true, prefix = "paypal")
 	@Bean
 	public APIContext paypalApiContextTest() {
 		boolean production = false;
 		boolean useProperties = false;
-		Properties properties = configurePropertiesPro(production, useProperties);
+		Properties properties = generateProperties(production, useProperties);
+		return initApi(properties);
+	}
+	
+	@ConditionalOnMissingClass("junit.framework.Test")
+	@ConditionalOnMissingBean
+	@ConditionalOnProperty(matchIfMissing = true, value= "paypal.clientId")
+	@Bean
+	public APIContext paypalApiContextDefault() {
+		boolean production = false;
+		boolean useProperties = false;
+		Properties properties = generateProperties(production, useProperties);
 		return initApi(properties);
 	}
 
-	@ConditionalOnClass(Test.class)
-	@ConditionalOnMissingBean
-	@ConditionalOnProperty(value = { "paypal.clientId", "paypal.clientSecret" })
-	@Bean
-	public APIContext paypalApiContextTestProperties() {
-		boolean production = false;
-		boolean useProperties = true;
-		Properties properties = configurePropertiesPro(production, useProperties);
-		return initApi(properties);
-	}
 
 	@ConditionalOnMissingClass("junit.framework.Test")
 	@ConditionalOnMissingBean
 	@ConditionalOnProperty(value = { "paypal.clientId", "paypal.clientSecret" })
 	@Bean
+	public APIContext paypalApiContextProperties() {
+		boolean production = false;
+		boolean useProperties = true;
+		Properties properties = generateProperties(production, useProperties);
+		return initApi(properties);
+	}
+	
+	@ConditionalOnMissingClass("junit.framework.Test")
+	@ConditionalOnMissingBean
+	@ConditionalOnProperty(value = { "paypal.clientId", "paypal.clientSecret" , "paypal.production"})
+	@Bean
 	public APIContext paypalApiContextPro() {
 		boolean production = true;
 		boolean useProperties = true;
-		Properties properties = configurePropertiesPro(production, useProperties);
+		Properties properties = generateProperties(production, useProperties);
 		return initApi(properties);
 	}
 
 	private APIContext initApi(Properties properties) {
+		ConfigManager.combineDefaultProperties(properties);
+		String token = getAccessToken(properties);
 		PayPalResource.initConfig(properties);
-		return new APIContext(getAccessToken());
+		return new APIContext(token);
 	}
 
-	private String getAccessToken() {
-		String clientID = ConfigManager.getInstance().getConfigurationMap().get(Constants.CLIENT_ID);
-		String clientSecret = ConfigManager.getInstance().getConfigurationMap().get(Constants.CLIENT_SECRET);
+	private String getAccessToken(Properties properties) {
+		String clientID = properties.getProperty("clientId");
+		String clientSecret =properties.getProperty("clientSecret");
+		Map<String, String> map = new HashMap<String, String>();
+		for (final String name: properties.stringPropertyNames()){
+			map.put(name, properties.getProperty(name));
+	}
 		try {
-			return new OAuthTokenCredential(clientID, clientSecret).getAccessToken();
+			return new OAuthTokenCredential(clientID, clientSecret,map).getAccessToken();
 		} catch (PayPalRESTException e) {
 			logger.error("Error recuperando el token del api paypal", e);
 			throw new RuntimeException("No se puede configurar el token para el acceso al api de paypal", e);
 		}
 	}
 
-	private Properties configurePropertiesPro(boolean production, boolean useProperties) {
+	private Properties generateProperties(boolean production, boolean useProperties) {
 		Properties properties = new Properties();
-		properties.put("http.ConnectionTimeOut", 5000);
-		properties.put("http.Retry", 1);
-		properties.put("http.ReadTimeOut", 30000);
-		properties.put("http.MaxConnection", 100);
+		properties.put("http.ConnectionTimeOut", "5000");
+		properties.put("http.Retry", "1");
+		properties.put("http.ReadTimeOut", "30000");
+		properties.put("http.MaxConnection", "100");
 
-		properties.put("http.ProxyPort", 8080);
+		properties.put("http.ProxyPort", "8080");
 		properties.put("http.ProxyHost", "127.0.0.1");
-		properties.put("http.UseProxy", false);
-		properties.put("http.ProxyUserName", null);
-		properties.put("http.ProxyPassword", null);
+		properties.put("http.UseProxy", "false");
 
-		properties.put("http.GoogleAppEngine", false);
+
+		properties.put("http.GoogleAppEngine", "false");
 
 		if (production) {
 			properties.put("service.EndPoint", "https://api.paypal.com");
