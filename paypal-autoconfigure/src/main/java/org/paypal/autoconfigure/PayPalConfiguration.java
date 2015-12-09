@@ -44,7 +44,7 @@ public class PayPalConfiguration {
 	
 	@ConditionalOnMissingClass("junit.framework.Test")
 	@ConditionalOnMissingBean
-	@ConditionalOnProperty(matchIfMissing = true, value= "paypal.clientId")
+	@ConditionalOnProperty(matchIfMissing = true, value= { "paypal.clientId", "paypal.clientSecret" })
 	@Bean
 	public APIContext paypalApiContextDefault() {
 		boolean production = false;
