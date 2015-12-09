@@ -20,7 +20,9 @@ public class PruebaTests {
 
 	@Test
 	public void test(){
-		Assert.assertNotNull(applicationContext.getBean("paypalApiContextTest"));
+		Assert.assertTrue(applicationContext.containsBean("paypalApiContextTest"));
+		Assert.assertFalse(applicationContext.containsBean("paypalApiContextDefault"));
+
 	}
 
 }
