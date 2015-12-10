@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class PayPalProperties {
 	private String clientId;
 	private String clientSecret;
+	private Boolean production;
 	
 	public String getClientId() {
 		return clientId;
@@ -18,6 +19,12 @@ public class PayPalProperties {
 	}
 	public void setClientSecret(String clientSecret) {
 		this.clientSecret = clientSecret;
+	}
+	public Boolean getProduction() {
+		return production;
+	}
+	public void setProduction(Boolean production) {
+		this.production = production;
 	}
 	
 	

@@ -71,7 +71,7 @@ public class PayPalConfiguration {
 	@Bean
 	public APIContext paypalApiContextPro() {
 		boolean production = true;
-		boolean useProperties = true;
+		boolean useProperties = payPalProperties.getProduction();
 		Properties properties = generateProperties(production, useProperties);
 		return initApi(properties);
 	}
