@@ -122,8 +122,8 @@ public class PayPalConfiguration {
 			properties.put("clientId", payPalProperties.getClientId());
 			properties.put("clientSecret", payPalProperties.getClientSecret());
 		} else {
-			properties.put("clientId", "");
-			properties.put("clientSecret", "");
+			properties.put("clientId", "AYSq3RDGsmBLJE-otTkBtM-jBRd1TCQwFf9RGfwddNXWz0uFU9ztymylOhRS");
+			properties.put("clientSecret", "EGnHDxD_qRPdaLdZz8iCr8N7_MzF-YHPTkjs6NKYQvQSBngp4PTTVWkPZRbL");
 		}
 
 		return properties;
