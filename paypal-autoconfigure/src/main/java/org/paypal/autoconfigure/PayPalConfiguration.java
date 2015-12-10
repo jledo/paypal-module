@@ -7,13 +7,8 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import com.paypal.base.ConfigManager;
 import com.paypal.base.rest.APIContext;
@@ -21,8 +16,9 @@ import com.paypal.base.rest.OAuthTokenCredential;
 import com.paypal.base.rest.PayPalRESTException;
 import com.paypal.base.rest.PayPalResource;
 
-@Configuration
-@ConditionalOnClass(PayPalResource.class)
+
+// establecer las anotaciones para que sea una clase de configuración
+// y ademas sea condicional
 @EnableConfigurationProperties(PayPalProperties.class)
 public class PayPalConfiguration {
 
@@ -32,8 +28,7 @@ public class PayPalConfiguration {
 	private PayPalProperties payPalProperties;
 	
 
-	@ConditionalOnClass(name="junit.framework.Test")
-	@ConditionalOnMissingBean
+	//Usar las anotaciones adecuadas para el caso de test
 	@Bean
 	public APIContext paypalApiContextTest() {
 		boolean production = false;
@@ -42,9 +37,7 @@ public class PayPalConfiguration {
 		return initApi(properties);
 	}
 	
-	@ConditionalOnMissingClass("junit.framework.Test")
-	@ConditionalOnMissingBean
-	@ConditionalOnProperty(matchIfMissing = true, value= { "paypal.clientId", "paypal.clientSecret" })
+	//Usar las anotaciones adecuadas para el caso por defecto
 	@Bean
 	public APIContext paypalApiContextDefault() {
 		boolean production = false;
@@ -53,10 +46,7 @@ public class PayPalConfiguration {
 		return initApi(properties);
 	}
 
-
-	@ConditionalOnMissingClass("junit.framework.Test")
-	@ConditionalOnMissingBean
-	@ConditionalOnProperty(value = { "paypal.clientId", "paypal.clientSecret" })
+	//Usar las anotaciones para properties
 	@Bean
 	public APIContext paypalApiContextProperties() {
 		boolean production = false;
@@ -65,9 +55,7 @@ public class PayPalConfiguration {
 		return initApi(properties);
 	}
 	
-	@ConditionalOnMissingClass("junit.framework.Test")
-	@ConditionalOnMissingBean
-	@ConditionalOnProperty(value = { "paypal.clientId", "paypal.clientSecret" , "paypal.production"})
+	//anotaciones para producción
 	@Bean
 	public APIContext paypalApiContextPro() {
 		boolean production = true;
@@ -122,8 +110,8 @@ public class PayPalConfiguration {
 			properties.put("clientId", payPalProperties.getClientId());
 			properties.put("clientSecret", payPalProperties.getClientSecret());
 		} else {
-			properties.put("clientId", "AYSq3RDGsmBLJE-otTkBtM-jBRd1TCQwFf9RGfwddNXWz0uFU9ztymylOhRS");
-			properties.put("clientSecret", "EGnHDxD_qRPdaLdZz8iCr8N7_MzF-YHPTkjs6NKYQvQSBngp4PTTVWkPZRbL");
+			properties.put("clientId", "");
+			properties.put("clientSecret", "");
 		}
 
 		return properties;
